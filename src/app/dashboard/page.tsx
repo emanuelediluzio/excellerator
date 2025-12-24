@@ -96,21 +96,33 @@ export default function Dashboard() {
 
     const processDocument = async (fileToProcess: File) => {
         setIsProcessing(true);
-        const formData = new FormData();
-        formData.append("file", fileToProcess);
 
         try {
-            const response = await fetch("/api/process-document", {
-                method: "POST",
-                body: formData,
+            const prompt = `
+            You are an expert data entry AI. Your task is to extract data from this document image into a structured JSON format that can be easily converted to an Excel spreadsheet.
+            
+            RULES:
+            1. Analyze the document structure (tables, lists, forms).
+            2. If it's a table, return an array of objects where keys are headers.
+            3. If it's a form, return a flat object or nested objects if logical.
+            4. Handle handwritten text carefully. If illegible, use "[?]" or make a best guess.
+            5. OUTPUT MUST BE PURE JSON. No markdown backticks, no explanatory text.
+            6. The root of the JSON should be an object with a "data" property containing the main array of rows.
+               Example: { "data": [ { "Column1": "Value1" }, ... ] }
+            `;
+
+            // Use Puter.js directly on client
+            const response = await window.puter.ai.chat(prompt, {
+                model: "gemini-2.0-flash-exp",
+                image: fileToProcess,
+                temperature: 0.1
             });
 
-            if (!response.ok) {
-                const errorResult = await response.json();
-                throw new Error(errorResult.details || errorResult.error || "Failed to process");
-            }
+            const text = response.message.content || response.toString();
 
-            const result = await response.json();
+            // Clean markdown if present
+            const jsonString = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            const result = JSON.parse(jsonString);
 
             if (result.data && Array.isArray(result.data)) {
                 setData(result.data);
@@ -118,13 +130,12 @@ export default function Dashboard() {
                     setColumns(Object.keys(result.data[0]));
                 }
             } else {
-                // Handle non-array response (e.g. form data) by wrapping in array
                 setData([result.data || result]);
                 setColumns(Object.keys(result.data || result));
             }
         } catch (error: any) {
             console.error("Error:", error);
-            alert(`Error: ${error.message}`);
+            alert(`Processing Failed: ${error.message || "Unknown error"}. Ensure Puter.js has loaded.`);
         } finally {
             setIsProcessing(false);
         }
@@ -152,30 +163,52 @@ export default function Dashboard() {
         setIsChatLoading(true);
 
         try {
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: newMessage.content,
-                    data: data,
-                    history: messages.slice(-5) // Send last 5 messages for context
-                }),
+            const prompt = `
+          You are an intelligent data assistant helping a user manage an Excel-like dataset.
+          
+          CURRENT DATA:
+          ${JSON.stringify(data)}
+
+          USER REQUEST: "${newMessage.content}"
+
+          INSTRUCTIONS:
+          1. Analyze the user's request.
+          2. If the user asks to modify the data (e.g., "Change row 1 price to 500", "Fix the typo in Name"), PERFORM THE MODIFICATION.
+          3. If the user asks a question, answer it.
+          4. RETURN A JSON OBJECT:
+             {
+               "response": "Your conversational response.",
+               "updatedData": [ ... modified dataset ... ] (OR null if no changes)
+             }
+          5. BE STRICT: "updatedData" must be the COMPLETE dataset.
+          `;
+
+            const response = await window.puter.ai.chat(prompt, {
+                model: "gemini-2.0-flash-exp",
+                temperature: 0.1
             });
 
-            const result = await response.json();
+            const text = response.message.content || response.toString();
+            const jsonString = text.replace(/```json/g, "").replace(/```/g, "").trim();
+
+            let result;
+            try {
+                result = JSON.parse(jsonString);
+            } catch {
+                result = { response: text }; // Fallback
+            }
 
             setMessages(prev => [...prev, { role: "assistant", content: result.response }]);
 
             if (result.updatedData) {
                 setData(result.updatedData);
-                // Refresh columns if schema changed
                 if (result.updatedData.length > 0) {
                     setColumns(Object.keys(result.updatedData[0]));
                 }
             }
         } catch (error) {
             console.error("Chat error:", error);
-            setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I encountered an error processing your request." }]);
+            setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I encountered an error with Puter.js." }]);
         } finally {
             setIsChatLoading(false);
         }

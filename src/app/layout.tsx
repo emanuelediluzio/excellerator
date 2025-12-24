@@ -19,6 +19,8 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "@/context/AuthContext";
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,6 +34,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        <Script src="https://js.puter.com/v2/" strategy="afterInteractive" />
       </body>
     </html>
   );
