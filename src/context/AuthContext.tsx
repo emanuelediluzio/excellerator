@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             router.push("/dashboard");
         } catch (error) {
             console.error("Error signing in with Google", error);
+            throw error;
         }
     };
 
