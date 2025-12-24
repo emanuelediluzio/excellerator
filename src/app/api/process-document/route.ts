@@ -53,10 +53,16 @@ export async function POST(req: NextRequest) {
 
     } catch (error: any) {
         console.error("Error processing document:", error);
-        // Return actual error message for debugging (remove in strict production if needed)
+
+        // Log deep details if available (e.g. Gemini safety ratings or API quotas)
+        if (error.response) {
+            console.error("Gemini API Error Response:", await error.response.json().catch(() => "No JSON body"));
+        }
+
         return NextResponse.json({
             error: "Failed to process document",
-            details: error.message || String(error)
+            details: error.message || "Unknown server error",
+            hint: "Check API Key and Model compatibility (gemini-2.0-flash-exp)"
         }, { status: 500 });
     }
 }

@@ -105,7 +105,10 @@ export default function Dashboard() {
                 body: formData,
             });
 
-            if (!response.ok) throw new Error("Failed to process");
+            if (!response.ok) {
+                const errorResult = await response.json();
+                throw new Error(errorResult.details || errorResult.error || "Failed to process");
+            }
 
             const result = await response.json();
 
@@ -119,9 +122,9 @@ export default function Dashboard() {
                 setData([result.data || result]);
                 setColumns(Object.keys(result.data || result));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error:", error);
-            alert("Failed to process document. Please try again.");
+            alert(`Error: ${error.message}`);
         } finally {
             setIsProcessing(false);
         }
@@ -243,7 +246,10 @@ export default function Dashboard() {
                                                 <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
                                             </div>
 
-                                            <button className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition-colors">
+                                            <button
+                                                onClick={() => alert("Settings panel coming soon!")}
+                                                className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition-colors"
+                                            >
                                                 <Settings className="w-4 h-4" />
                                                 Settings
                                             </button>
