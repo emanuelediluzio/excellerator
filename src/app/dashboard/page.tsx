@@ -16,7 +16,10 @@ import {
     Trash2,
     Sparkles,
     ArrowRight,
-    Send
+    Send,
+    LogOut,
+    Settings,
+    User
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { cn } from "@/lib/utils";
@@ -31,7 +34,7 @@ interface ChatMessage {
 }
 
 export default function Dashboard() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, logout, loading: authLoading } = useAuth();
     const router = useRouter();
 
     const [file, setFile] = useState<File | null>(null);
@@ -40,6 +43,7 @@ export default function Dashboard() {
     const [data, setData] = useState<DataRow[]>([]);
     const [columns, setColumns] = useState<string[]>([]);
     const [showChat, setShowChat] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     // Chat State
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -219,8 +223,41 @@ export default function Dashboard() {
                                     </button>
                                 </>
                             )}
-                            <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-sm font-bold ring-2 ring-white shadow-sm">
-                                {user.email?.[0].toUpperCase()}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                    className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-sm font-bold ring-2 ring-white shadow-sm hover:ring-emerald-200 transition-all"
+                                >
+                                    {user.email?.[0].toUpperCase()}
+                                </button>
+
+                                <AnimatePresence>
+                                    {showProfileMenu && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute right-0 top-12 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 origin-top-right"
+                                        >
+                                            <div className="px-4 py-3 border-b border-gray-100 mb-1">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                                            </div>
+
+                                            <button className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition-colors">
+                                                <Settings className="w-4 h-4" />
+                                                Settings
+                                            </button>
+
+                                            <button
+                                                onClick={() => logout()}
+                                                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                Logout
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
                     </header>
@@ -432,20 +469,22 @@ export default function Dashboard() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </div >
 
             {/* Floating Action Button for Chat */}
-            {data.length > 0 && !showChat && (
-                <motion.button
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    onClick={() => setShowChat(true)}
-                    className="absolute bottom-8 right-8 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-105 z-30 group"
-                >
-                    <MessageSquare className="w-6 h-6 group-hover:hidden" />
-                    <Sparkles className="w-6 h-6 hidden group-hover:block" />
-                </motion.button>
-            )}
-        </div>
+            {
+                data.length > 0 && !showChat && (
+                    <motion.button
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        onClick={() => setShowChat(true)}
+                        className="absolute bottom-8 right-8 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-105 z-30 group"
+                    >
+                        <MessageSquare className="w-6 h-6 group-hover:hidden" />
+                        <Sparkles className="w-6 h-6 hidden group-hover:block" />
+                    </motion.button>
+                )
+            }
+        </div >
     );
 }

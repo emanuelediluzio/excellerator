@@ -3,6 +3,12 @@ import { model, fileToGenerativePart } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
     try {
+        // Validation for API Key
+        if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+            console.error("Missing NEXT_PUBLIC_GEMINI_API_KEY");
+            return NextResponse.json({ error: "Server Configuration Error: Missing Gemini API Key" }, { status: 500 });
+        }
+
         const formData = await req.formData();
         const file = formData.get("file") as File;
         const promptInstructions = formData.get("prompt") as string || "";
@@ -45,8 +51,12 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(data);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error processing document:", error);
-        return NextResponse.json({ error: "Failed to process document" }, { status: 500 });
+        // Return actual error message for debugging (remove in strict production if needed)
+        return NextResponse.json({
+            error: "Failed to process document",
+            details: error.message || String(error)
+        }, { status: 500 });
     }
 }
