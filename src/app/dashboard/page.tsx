@@ -45,6 +45,10 @@ export default function Dashboard() {
     const [showChat, setShowChat] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+    // Template State
+    const [templateHeaders, setTemplateHeaders] = useState<string[]>([]);
+    const [templateName, setTemplateName] = useState<string | null>(null);
+
     // Chat State
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [messageInput, setMessageInput] = useState("");
@@ -94,20 +98,43 @@ export default function Dashboard() {
         processDocument(selectedFile);
     };
 
+    const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const bstr = evt.target?.result;
+                const wb = XLSX.read(bstr, { type: "binary" });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                if (data && data.length > 0) {
+                    const headers = data[0] as string[];
+                    setTemplateHeaders(headers);
+                    setTemplateName(file.name);
+                }
+            };
+            reader.readAsBinaryString(file);
+        }
+    };
+
     const processDocument = async (fileToProcess: File) => {
         setIsProcessing(true);
 
         try {
+            const headerInstruction = templateHeaders.length > 0
+                ? `IMPORTANT: You MUST extract data using EXACTLY these column headers: ${JSON.stringify(templateHeaders)}. Do not add or remove columns. Map the document data to these headers best as possible.`
+                : "Analyze the document structure and generate appropriate headers.";
+
             const prompt = `
             You are an expert data entry AI. Your task is to extract data from this document image into a structured JSON format that can be easily converted to an Excel spreadsheet.
             
             RULES:
-            1. Analyze the document structure (tables, lists, forms).
-            2. If it's a table, return an array of objects where keys are headers.
-            3. If it's a form, return a flat object or nested objects if logical.
-            4. Handle handwritten text carefully. If illegible, use "[?]" or make a best guess.
-            5. OUTPUT MUST BE PURE JSON. No markdown backticks, no explanatory text.
-            6. The root of the JSON should be an object with a "data" property containing the main array of rows.
+            1. ${headerInstruction}
+            2. If it's a table, return an array of objects.
+            3. Handle handwritten text carefully. If illegible, use "[?]" or make a best guess.
+            4. OUTPUT MUST BE PURE JSON. No markdown backticks.
+            5. The root of the JSON should be an object with a "data" property containing the main array of rows.
                Example: { "data": [ { "Column1": "Value1" }, ... ] }
             `;
 
@@ -164,24 +191,24 @@ export default function Dashboard() {
 
         try {
             const prompt = `
-          You are an intelligent data assistant helping a user manage an Excel-like dataset.
-          
-          CURRENT DATA:
-          ${JSON.stringify(data)}
+            You are an intelligent data assistant helping a user manage an Excel-like dataset.
+            
+            CURRENT DATA:
+            ${JSON.stringify(data)}
 
-          USER REQUEST: "${newMessage.content}"
+            USER REQUEST: "${newMessage.content}"
 
-          INSTRUCTIONS:
-          1. Analyze the user's request.
-          2. If the user asks to modify the data (e.g., "Change row 1 price to 500", "Fix the typo in Name"), PERFORM THE MODIFICATION.
-          3. If the user asks a question, answer it.
-          4. RETURN A JSON OBJECT:
-             {
-               "response": "Your conversational response.",
-               "updatedData": [ ... modified dataset ... ] (OR null if no changes)
-             }
-          5. BE STRICT: "updatedData" must be the COMPLETE dataset.
-          `;
+            INSTRUCTIONS:
+            1. Analyze the user's request.
+            2. If the user asks to modify the data (e.g., "Change row 1 price to 500", "Fix the typo in Name"), PERFORM THE MODIFICATION.
+            3. If the user asks a question, answer it.
+            4. RETURN A JSON OBJECT:
+                {
+                "response": "Your conversational response.",
+                "updatedData": [ ... modified dataset ... ] (OR null if no changes)
+                }
+            5. BE STRICT: "updatedData" must be the COMPLETE dataset.
+            `;
 
             const response = await window.puter.ai.chat(prompt, {
                 model: "gemini-2.0-flash-exp",
@@ -354,6 +381,39 @@ export default function Dashboard() {
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Template Upload Input */}
+                                    <div className="mt-6 flex items-center justify-center">
+                                        <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm flex items-center gap-3">
+                                            <div className="bg-emerald-50 p-1.5 rounded-md">
+                                                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-xs font-semibold text-gray-700">Use Excel Template</p>
+                                                <p className="text-[10px] text-gray-400">
+                                                    {templateName ? `Selected: ${templateName}` : "Optional: Enforce headers"}
+                                                </p>
+                                            </div>
+                                            <label className="ml-2 cursor-pointer px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium rounded-md transition-colors border border-gray-200">
+                                                Browse
+                                                <input
+                                                    type="file"
+                                                    accept=".xlsx,.xls"
+                                                    onChange={handleTemplateUpload}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                            {templateName && (
+                                                <button
+                                                    onClick={() => { setTemplateName(null); setTemplateHeaders([]); }}
+                                                    className="p-1 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         ) : (
