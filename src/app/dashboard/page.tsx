@@ -176,14 +176,14 @@ export default function Dashboard() {
 
     if (authLoading || !user) {
         return (
-            <div className="min-h-screen aurora-bg flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-black/80 relative font-sans text-gray-900">
+        <div className="min-h-screen bg-background relative font-sans text-foreground">
             <div className="flex h-screen overflow-hidden">
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -191,11 +191,11 @@ export default function Dashboard() {
                     {/* Header */}
                     <header className={cn(
                         "px-8 py-5 flex items-center justify-between transition-all duration-300 z-20",
-                        data.length > 0 ? "bg-white/80 backdrop-blur-md border-b border-gray-200/50" : "absolute w-full"
+                        data.length > 0 ? "bg-white/90 backdrop-blur-md border-b border-gray-200" : "absolute w-full"
                     )}>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-50 rounded-lg">
-                                <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
+                            <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                                <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
                             </div>
                             <span className="font-bold text-lg tracking-tight text-gray-900">Excellerator</span>
                         </div>
@@ -212,14 +212,14 @@ export default function Dashboard() {
                                     </button>
                                     <button
                                         onClick={handleExport}
-                                        className="px-5 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-indigo-200"
+                                        className="px-5 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-emerald-200"
                                     >
                                         <Download className="w-4 h-4" />
                                         Export Excel
                                     </button>
                                 </>
                             )}
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold ring-2 ring-white shadow-sm">
+                            <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-sm font-bold ring-2 ring-white shadow-sm">
                                 {user.email?.[0].toUpperCase()}
                             </div>
                         </div>
@@ -227,10 +227,12 @@ export default function Dashboard() {
 
                     {/* Body */}
                     <main className="flex-1 overflow-auto relative bg-gray-50/50">
+                        {/* Background Grid */}
+                        <div className="absolute inset-0 bg-grid-pattern opacity-[0.3] pointer-events-none fixed" />
 
                         {data.length === 0 ? (
                             /* Upload State */
-                            <div className="h-full flex flex-col items-center justify-center p-6">
+                            <div className="h-full flex flex-col items-center justify-center p-6 relative z-10">
                                 <div className="max-w-xl w-full">
                                     <motion.div
                                         initial={{ opacity: 0, y: 10 }}
@@ -247,7 +249,7 @@ export default function Dashboard() {
                                         onDrop={handleDrop}
                                         className={cn(
                                             "relative group cursor-pointer flex flex-col items-center justify-center w-full h-72 rounded-3xl border-2 border-dashed transition-all duration-300 bg-white shadow-sm",
-                                            isDragging ? "border-indigo-500 bg-indigo-50/30 scale-[1.01] shadow-lg" : "border-gray-200 hover:border-indigo-400 hover:shadow-md",
+                                            isDragging ? "border-emerald-500 bg-emerald-50/30 scale-[1.01] shadow-lg" : "border-gray-200 hover:border-emerald-400 hover:shadow-md",
                                             isProcessing && "pointer-events-none opacity-80"
                                         )}
                                     >
@@ -262,9 +264,9 @@ export default function Dashboard() {
                                         {isProcessing ? (
                                             <div className="flex flex-col items-center gap-4">
                                                 <div className="relative">
-                                                    <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-75"></div>
+                                                    <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-75"></div>
                                                     <div className="relative p-4 bg-white rounded-full shadow-sm border">
-                                                        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                                                        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
                                                     </div>
                                                 </div>
                                                 <div className="text-center">
@@ -274,8 +276,8 @@ export default function Dashboard() {
                                             </div>
                                         ) : (
                                             <div className="flex flex-col items-center gap-5 text-center p-6">
-                                                <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-100 transition-all duration-300">
-                                                    <Upload className="w-8 h-8 text-indigo-500" />
+                                                <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-100 transition-all duration-300">
+                                                    <Upload className="w-8 h-8 text-emerald-500" />
                                                 </div>
                                                 <div>
                                                     <p className="text-lg font-medium text-gray-900">Drag & drop or click to upload</p>
@@ -291,11 +293,11 @@ export default function Dashboard() {
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="h-full flex flex-col bg-white"
+                                className="h-full flex flex-col bg-white relative z-10"
                             >
                                 <div className="overflow-auto flex-1">
                                     <table className="w-full text-sm text-left border-collapse">
-                                        <thead className="bg-gray-50/80 sticky top-0 z-10 backdrop-blur-sm">
+                                        <thead className="bg-gray-50/80 sticky top-0 z-10 backdrop-blur-sm shadow-sm ring-1 ring-black/5">
                                             <tr>
                                                 <th className="w-12 px-4 py-3 text-center border-b border-r border-gray-100 text-xs font-semibold text-gray-400 bg-gray-50">
                                                     #
@@ -309,7 +311,7 @@ export default function Dashboard() {
                                         </thead>
                                         <tbody>
                                             {data.map((row, idx) => (
-                                                <tr key={idx} className="group hover:bg-gray-50/50">
+                                                <tr key={idx} className="group hover:bg-emerald-50/10">
                                                     <td className="px-4 py-3 text-center border-b border-r border-gray-100 text-xs text-gray-400 bg-gray-50/30 font-mono">
                                                         {idx + 1}
                                                     </td>
@@ -319,7 +321,7 @@ export default function Dashboard() {
                                                                 type="text"
                                                                 value={String(row[col] ?? "")}
                                                                 onChange={(e) => updateCell(idx, col, e.target.value)}
-                                                                className="w-full h-full px-4 py-2.5 bg-transparent border-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white outline-none transition-all truncate text-gray-700"
+                                                                className="w-full h-full px-4 py-2.5 bg-transparent border-none focus:ring-2 focus:ring-emerald-500/50 focus:bg-white outline-none transition-all truncate text-gray-700 font-mono text-xs md:text-sm"
                                                             />
                                                         </td>
                                                     ))}
@@ -349,7 +351,7 @@ export default function Dashboard() {
                             <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50">
                                 <div>
                                     <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-indigo-500" />
+                                        <Sparkles className="w-4 h-4 text-emerald-500" />
                                         AI Assistant
                                     </h3>
                                     <p className="text-xs text-gray-500 mt-1">Ask me to format or fix your data.</p>
@@ -365,8 +367,8 @@ export default function Dashboard() {
                             <div className="flex-1 p-5 overflow-y-auto space-y-6 bg-gray-50/30">
                                 {messages.length === 0 && (
                                     <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                                        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
-                                            <Sparkles className="w-6 h-6 text-indigo-500" />
+                                        <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4 border border-emerald-100">
+                                            <Sparkles className="w-6 h-6 text-emerald-500" />
                                         </div>
                                         <h4 className="font-medium text-gray-900 mb-2">How can I help?</h4>
                                         <div className="space-y-2 w-full">
@@ -374,7 +376,7 @@ export default function Dashboard() {
                                                 <button
                                                     key={suggestion}
                                                     onClick={() => setMessageInput(suggestion)}
-                                                    className="block w-full text-sm p-3 bg-white border border-gray-100 rounded-xl hover:border-indigo-200 hover:shadow-sm transition-all text-gray-600 hover:text-indigo-600 text-left"
+                                                    className="block w-full text-sm p-3 bg-white border border-gray-200 rounded-xl hover:border-emerald-300 hover:shadow-sm transition-all text-gray-600 hover:text-emerald-700 text-left"
                                                 >
                                                     "{suggestion}"
                                                 </button>
@@ -387,7 +389,7 @@ export default function Dashboard() {
                                         <div className={cn(
                                             "p-4 rounded-2xl text-sm leading-relaxed shadow-sm",
                                             msg.role === "user"
-                                                ? "bg-indigo-600 text-white rounded-tr-sm"
+                                                ? "bg-emerald-600 text-white rounded-tr-sm"
                                                 : "bg-white border border-gray-100 text-gray-800 rounded-tl-sm"
                                         )}>
                                             {msg.content}
@@ -400,7 +402,7 @@ export default function Dashboard() {
                                 {isChatLoading && (
                                     <div className="flex items-start">
                                         <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-2">
-                                            <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                                            <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
                                             <span className="text-sm text-gray-500">Processing changes...</span>
                                         </div>
                                     </div>
@@ -416,12 +418,12 @@ export default function Dashboard() {
                                         value={messageInput}
                                         onChange={(e) => setMessageInput(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                                        className="w-full pl-4 pr-12 py-3.5 bg-gray-50 border-transparent focus:bg-white border focus:border-indigo-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 text-sm transition-all"
+                                        className="w-full pl-4 pr-12 py-3.5 bg-gray-50 border-transparent focus:bg-white border focus:border-emerald-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/10 text-sm transition-all"
                                     />
                                     <button
                                         onClick={handleSendMessage}
                                         disabled={!messageInput.trim() || isChatLoading}
-                                        className="absolute right-2 top-2 p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors"
+                                        className="absolute right-2 top-2 p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 transition-colors"
                                     >
                                         <ArrowRight className="w-4 h-4" />
                                     </button>
@@ -438,7 +440,7 @@ export default function Dashboard() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     onClick={() => setShowChat(true)}
-                    className="absolute bottom-8 right-8 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center transition-all hover:scale-105 z-30 group"
+                    className="absolute bottom-8 right-8 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-105 z-30 group"
                 >
                     <MessageSquare className="w-6 h-6 group-hover:hidden" />
                     <Sparkles className="w-6 h-6 hidden group-hover:block" />
